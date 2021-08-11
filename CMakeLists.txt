@@ -8,6 +8,14 @@ include(ExternalProject)
 
 file(MAKE_DIRECTORY ${CATKIN_DEVEL_PREFIX}/include)
 
+option(OPENGV_BUILD_WITH_MARCH_NATIVE "Enable native build" ON)
+if(OPENGV_BUILD_WITH_MARCH_NATIVE)
+    set(OPENGV_PATCH_COMMAND "")
+else()
+    message(WARNING "Disabling -march=native. Make sure this matches the gtsam config!")
+    set(OPENGV_PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/march_native_disable.patch)
+endif()
+
 ExternalProject_Add(
   opengv_src
   GIT_REPOSITORY https://github.com/laurentkneip/opengv.git
@@ -20,6 +28,7 @@ ExternalProject_Add(
   # Change the path to GTSAM's eigen to your own! ideally use gtsam_catkin...
   # -DEIGEN_INCLUDE_DIR=${CATKIN_DEVEL_PREFIX}/../src/eigen_catkin/include
   # -DEIGEN_INCLUDE_DIRS=${CATKIN_DEVEL_PREFIX}/../src/eigen_catkin/include
+  PATCH_COMMAND ${OPENGV_PATCH_COMMAND}
   BUILD_COMMAND cd ../opengv_src && make -j 8
   INSTALL_COMMAND cd ../opengv_src && make install
 )
